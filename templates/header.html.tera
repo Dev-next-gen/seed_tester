@@ -1,0 +1,26 @@
+<header class="bg-gray-900 text-white p-5 shadow-md">
+    <div class="container mx-auto flex justify-between items-center">
+        <!-- Logo et Titre -->
+        <h1 class="text-2xl font-extrabold tracking-wide">
+            <a href="/" class="text-blue-400 hover:text-blue-300 transition-colors duration-300">Seed Tester</a>
+        </h1>
+        
+        <!-- Navigation -->
+        <nav>
+            <ul class="flex space-x-6">
+                <li>
+                    <a href="/" class="text-gray-300 hover:text-blue-300 font-semibold transition-colors duration-300">Accueil</a>
+                </li>
+                <li>
+                    <a href="/config" class="text-gray-300 hover:text-blue-300 font-semibold transition-colors duration-300">Configuration</a>
+                </li>
+                <li>
+                    <a href="/run_tests" class="text-gray-300 hover:text-blue-300 font-semibold transition-colors duration-300">Lancer les tests</a>
+                </li>
+                <li>
+                    <a href="/download_csv" class="text-gray-300 hover:text-blue-300 font-semibold transition-colors duration-300">Télécharger CSV</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</header>

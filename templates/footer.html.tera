@@ -1,0 +1,6 @@
+<footer class="bg-gray-900 text-gray-300 p-6 mt-12 shadow-md">
+    <div class="container mx-auto text-center space-y-2">
+        <p class="text-sm tracking-wide">&copy; {{ current_year }} Seed Tester. Tous droits réservés.</p>
+        <p class="text-sm tracking-wide">Développé par Levelup.</p>
+    </div>
+</footer>

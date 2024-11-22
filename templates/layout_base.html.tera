@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Seed Tester</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+</head>
+<body>
+    <!-- Contenu principal inséré à partir des pages qui étendent ce layout -->
+    {% block content %}
+    {% endblock %}
+
+    <!-- Conteneur pour les messages d'alerte -->
+    <div id="alert" class="hidden fixed top-4 right-4 max-w-xs p-4 rounded-lg shadow-lg"></div>
+
+    <!-- Conteneur pour le loader -->
+    <div id="loader" class="hidden fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75">
+        <div class="spinner w-16 h-16 border-4 border-t-blue-500 border-gray-400 rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Script JavaScript pour gérer les alertes et les interactions -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const alertBox = document.getElementById("alert");
+            const loader = document.getElementById("loader");
+
+            // Fonction pour afficher une alerte
+            window.showAlert = function (message, type) {
+                if (!alertBox) {
+                    console.warn("Alerte : élément 'alertBox' introuvable.");
+                    return;
+                }
+                alertBox.textContent = message;
+                alertBox.className = `alert ${type === "success" ? "bg-green-600" : "bg-red-600"} 
+                    text-white fixed top-4 right-4 p-4 max-w-xs rounded-lg shadow-lg`;
+                alertBox.classList.remove("hidden");
+                setTimeout(() => alertBox.classList.add("hidden"), 3000);
+            };
+
+            // Fonction pour afficher ou masquer le loader
+            window.toggleLoader = function (show) {
+                if (!loader) {
+                    console.warn("Loader : élément 'loader' introuvable.");
+                    return;
+                }
+                loader.style.display = show ? "flex" : "none";
+            };
+        });
+    </script>
+</body>
+</html>

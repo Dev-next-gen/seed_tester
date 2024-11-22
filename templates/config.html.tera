@@ -1,0 +1,143 @@
+{% extends "layout_base" %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <!-- En-tête de la page -->
+    <header class="config-header text-center mb-6">
+        <h1 class="text-3xl font-bold text-blue-400">Configuration des Tests RNG</h1>
+        <p class="text-gray-400 mt-2">Personnalisez les paramètres de votre analyse RNG en ajustant les options ci-dessous.</p>
+    </header>
+
+    <!-- Formulaire de configuration -->
+    <div class="config-section bg-gray-900 p-6 rounded-lg shadow-lg">
+        <form id="config-form">
+            <!-- Nombre de seeds -->
+            <div class="form-group mb-4">
+                <label for="num_seeds" class="block text-gray-300 font-semibold mb-2">Nombre de seeds :</label>
+                <input 
+                    type="number" 
+                    id="num_seeds" 
+                    name="num_seeds" 
+                    placeholder="Entrez un nombre" 
+                    value="{{ default_seeds }}" 
+                    min="1" 
+                    required 
+                    class="w-full px-4 py-2 border border-gray-700 rounded focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-800 text-white"
+                >
+                <small class="block text-gray-500 mt-1">Choisissez le nombre de seeds pour votre analyse.</small>
+            </div>
+
+            <!-- Mode de test -->
+            <div class="form-group mb-4">
+                <label for="test_mode" class="block text-gray-300 font-semibold mb-2">Mode de test :</label>
+                <select 
+                    id="test_mode" 
+                    name="test_mode" 
+                    class="w-full px-4 py-2 border border-gray-700 rounded focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-800 text-white"
+                    required
+                >
+                    <option value="standard" {% if default_mode == "standard" %}selected{% endif %}>Standard</option>
+                    <option value="advanced" {% if default_mode == "advanced" %}selected{% endif %}>Avancé</option>
+                    <option value="expert" {% if default_mode == "expert" %}selected{% endif %}>Expert</option>
+                </select>
+                <small class="block text-gray-500 mt-1">Choisissez le niveau de détail pour l'analyse RNG.</small>
+            </div>
+
+            <!-- Bouton de soumission -->
+            <div class="button-section text-center mt-4">
+                <button 
+                    type="submit" 
+                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded shadow-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                >
+                    Lancer les tests
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Résultats des tests -->
+    <div id="results-container" class="results-container bg-gray-900 p-6 mt-6 rounded-lg shadow-lg hidden">
+        <h3 class="text-xl font-semibold text-white mb-4 text-center">Résultats des tests</h3>
+        <div id="results-table" class="overflow-x-auto">
+            <p class="text-gray-400 text-center">Les résultats des tests s’afficheront ici après soumission.</p>
+        </div>
+    </div>
+
+    <!-- Notifications d'état -->
+    <div id="alert" class="alert hidden mt-6 text-center bg-gray-800 text-white px-4 py-2 rounded shadow-lg" role="alert"></div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('config-form');
+        const resultsContainer = document.getElementById('results-container');
+        const resultsTable = document.getElementById('results-table');
+        const alertBox = document.getElementById('alert');
+
+        // Fonction pour afficher une alerte
+        function showAlert(message, type) {
+            if (alertBox) {
+                alertBox.innerText = message;
+                alertBox.className = `alert ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white px-4 py-2 rounded shadow-lg`;
+                alertBox.classList.remove('hidden');
+                setTimeout(() => alertBox.classList.add('hidden'), 3000);
+            }
+        }
+
+        // Gestion du formulaire de configuration
+        form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            resultsTable.innerHTML = `<p class="text-gray-400 text-center">Chargement des résultats...</p>`;
+            resultsContainer.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/run_tests', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        num_seeds: parseInt(data.num_seeds, 10),
+                        test_mode: data.test_mode
+                    }),
+                });
+
+                if (!response.ok) throw new Error('Erreur lors de la requête.');
+
+                const results = await response.json();
+
+                if (results && results.length) {
+                    let html = `<table class="w-full border-collapse text-left text-gray-200">
+                                    <thead>
+                                        <tr class="bg-gray-700">
+                                            <th class="border-b-2 px-4 py-2">Nom du test</th>
+                                            <th class="border-b-2 px-4 py-2">Résultat</th>
+                                            <th class="border-b-2 px-4 py-2">Score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+                    results.forEach(result => {
+                        html += `<tr class="${result.passed ? 'bg-green-900' : 'bg-red-900'} hover:bg-gray-700">
+                                    <td class="border-b px-4 py-2">${result.test_name}</td>
+                                    <td class="border-b px-4 py-2">${result.passed ? 'Réussi' : 'Échoué'}</td>
+                                    <td class="border-b px-4 py-2">${parseFloat(result.score).toFixed(2)}</td>
+                                </tr>`;
+                    });
+                    html += `</tbody></table>`;
+                    resultsTable.innerHTML = html;
+                } else {
+                    resultsTable.innerHTML = `<p class="text-gray-400 text-center">Aucun résultat trouvé.</p>`;
+                }
+
+                showAlert('Tests exécutés avec succès.', 'success');
+            } catch (error) {
+                console.error('Erreur :', error);
+                resultsTable.innerHTML = `<p class="text-red-500 text-center">Erreur lors de l'exécution des tests.</p>`;
+                showAlert('Erreur lors de l\'exécution des tests.', 'error');
+            }
+        });
+    });
+</script>
+{% endblock %}

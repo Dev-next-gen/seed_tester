@@ -1,0 +1,198 @@
+{% extends "layout_base" %}
+
+{% block content %}
+<div class="bg-gray-900 text-white p-8 rounded-lg shadow-lg">
+    <h2 class="text-3xl font-bold mb-6">Analyse de données RNG</h2>
+
+    <!-- Formulaire pour lancer l'analyse -->
+    <form id="analyze-form" class="space-y-4">
+        <div>
+            <label for="key" class="block text-gray-300 mb-2 font-semibold">Clé pour l'analyse :</label>
+            <input 
+                type="text" 
+                id="key" 
+                name="key" 
+                placeholder="Entrez une clé" 
+                required 
+                class="w-full px-4 py-2 border border-gray-700 rounded bg-gray-800 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+        </div>
+        <button 
+            id="analyze-btn" 
+            type="submit" 
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition"
+        >
+            Lancer l'analyse
+        </button>
+    </form>
+
+    <!-- Notification d'alerte -->
+    <div id="alert" class="alert hidden mt-6"></div>
+
+    <!-- Loader pour indiquer le chargement de l'analyse -->
+    <div id="loader" class="hidden mt-4 text-center">
+        <span class="spinner w-8 h-8 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"></span>
+    </div>
+
+    <!-- Zone de résultats -->
+    <div id="result" class="mt-8">
+        <h2 class="text-2xl font-semibold mb-4">Résultats</h2>
+        <div id="results-table-container" class="bg-gray-800 p-4 rounded-lg">
+            <p class="text-gray-400">Aucun résultat disponible. Lancez l'analyse pour voir les résultats.</p>
+        </div>
+    </div>
+
+    <!-- Boutons pour télécharger les résultats -->
+    <div class="mt-6 space-x-4">
+        <button 
+            id="download-btn" 
+            class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg hidden"
+        >
+            Télécharger les résultats en CSV
+        </button>
+        <button 
+            id="download-pdf-btn" 
+            class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg hidden"
+        >
+            Télécharger les résultats en PDF
+        </button>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const analyzeForm = document.getElementById("analyze-form");
+    const loader = document.getElementById("loader");
+    const alertBox = document.getElementById("alert");
+    const resultContainer = document.getElementById("results-table-container");
+    const downloadCSVButton = document.getElementById("download-btn");
+    const downloadPDFButton = document.getElementById("download-pdf-btn");
+
+    // Fonction pour afficher une alerte
+    function showAlert(message, type) {
+        alertBox.innerText = message;
+        alertBox.className = `alert ${type === "success" ? "bg-green-600" : "bg-red-600"} text-white p-4 rounded shadow-lg`;
+        alertBox.classList.remove("hidden");
+        setTimeout(() => alertBox.classList.add("hidden"), 3000);
+    }
+
+    // Fonction pour mettre à jour les résultats
+    function updateResults(results) {
+        if (!results || results.length === 0) {
+            resultContainer.innerHTML = `<p class="text-gray-400">Aucun résultat disponible. Lancez l'analyse pour voir les résultats.</p>`;
+            downloadCSVButton.classList.add("hidden");
+            downloadPDFButton.classList.add("hidden");
+            return;
+        }
+        let html = `
+            <table class="results-table w-full border-collapse mt-4">
+                <thead>
+                    <tr>
+                        <th class="border-b-2 border-gray-700 p-2 text-left">Statistique</th>
+                        <th class="border-b-2 border-gray-700 p-2 text-left">Valeur</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        results.forEach(result => {
+            html += `
+                <tr>
+                    <td class="p-2 border-b border-gray-700">${result.stat}</td>
+                    <td class="p-2 border-b border-gray-700">${result.value}</td>
+                </tr>`;
+        });
+        html += `</tbody></table>`;
+        resultContainer.innerHTML = html;
+        downloadCSVButton.classList.remove("hidden");
+        downloadPDFButton.classList.remove("hidden");
+    }
+
+    // Gestion de la soumission du formulaire d'analyse
+    analyzeForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const key = document.getElementById("key").value.trim();
+
+        if (!key) {
+            showAlert("Veuillez entrer une clé pour lancer l'analyse.", "error");
+            return;
+        }
+
+        loader.classList.remove("hidden");
+
+        try {
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key })
+            });
+
+            if (!response.ok) throw new Error(`Erreur HTTP : ${response.status}`);
+
+            const data = await response.json();
+            if (data.success) {
+                showAlert("Analyse lancée avec succès.", "success");
+                updateResults(data.results);
+            } else {
+                showAlert("Échec de l'analyse.", "error");
+            }
+        } catch (error) {
+            console.error("Erreur lors de l'analyse :", error);
+            showAlert("Erreur lors de l'analyse.", "error");
+        } finally {
+            loader.classList.add("hidden");
+        }
+    });
+
+    // Gestion du téléchargement CSV
+    downloadCSVButton.addEventListener("click", async function () {
+        try {
+            const response = await fetch('/export_csv');
+
+            if (!response.ok) throw new Error(`Erreur HTTP : ${response.status}`);
+
+            const data = await response.text();
+            const blob = new Blob([data], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'resultats.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            showAlert("Téléchargement du CSV terminé.", "success");
+        } catch (error) {
+            console.error("Erreur lors du téléchargement :", error);
+            showAlert("Échec du téléchargement CSV.", "error");
+        }
+    });
+
+    // Gestion du téléchargement PDF
+    downloadPDFButton.addEventListener("click", async function () {
+        try {
+            const response = await fetch('/export_pdf');
+
+            if (!response.ok) throw new Error(`Erreur HTTP : ${response.status}`);
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'resultats.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            showAlert("Téléchargement du PDF terminé.", "success");
+        } catch (error) {
+            console.error("Erreur lors du téléchargement :", error);
+            showAlert("Échec du téléchargement PDF.", "error");
+        }
+    });
+});
+</script>
+{% endblock scripts %}

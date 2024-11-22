@@ -1,0 +1,115 @@
+{% extends "layout_base" %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-4">
+    <header class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-blue-500">Seed Tester</h1>
+        <nav class="mt-4">
+            <a href="/" class="text-blue-400 hover:text-blue-600 mx-2 font-semibold">Accueil</a>
+            <a href="/config" class="text-blue-400 hover:text-blue-600 mx-2 font-semibold">Configuration</a>
+            <a href="/run_tests" class="text-blue-400 hover:text-blue-600 mx-2 font-semibold">Lancer les tests</a>
+            <a href="/export_csv" class="text-blue-400 hover:text-blue-600 mx-2 font-semibold">Télécharger CSV</a>
+            {% if pdf_export_enabled %}
+            <a href="/export_pdf" class="text-blue-400 hover:text-blue-600 mx-2 font-semibold">Télécharger PDF</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main class="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold text-gray-200">Seed Tester - Analyse RNG</h2>
+
+        <!-- Formulaire pour lancer l'analyse -->
+        <form id="analyze-form" method="POST" class="mt-6 text-center">
+            <button 
+                type="submit" 
+                class="px-6 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                Lancer l'analyse
+            </button>
+        </form>
+
+        <!-- Zone de résultats -->
+        <div class="message-box mt-8 bg-gray-900 p-4 rounded shadow">
+            <h3 class="text-xl font-semibold text-blue-400">Dernières statistiques</h3>
+            {% if results %}
+                <table class="results-table w-full text-left mt-4 border-collapse bg-gray-800 rounded shadow">
+                    <thead class="bg-gray-700">
+                        <tr>
+                            <th class="px-4 py-2 text-gray-300">Test</th>
+                            <th class="px-4 py-2 text-gray-300">Résultat</th>
+                            <th class="px-4 py-2 text-gray-300">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr class="{% if result.passed %}bg-green-900{% else %}bg-red-900{% endif %} hover:bg-gray-700">
+                            <td class="px-4 py-2 text-gray-100">{{ result.test_name }}</td>
+                            <td class="px-4 py-2 text-gray-100">
+                                {% if result.passed %}
+                                    <span class="text-green-400 font-semibold">Réussi</span>
+                                {% else %}
+                                    <span class="text-red-400 font-semibold">Échoué</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-2 text-gray-100">{{ result.score | float(format="%.2f") }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="text-center mt-4">
+                    <p class="text-gray-400 italic">Aucune statistique disponible pour le moment.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Boutons pour télécharger les résultats -->
+        <div class="text-center mt-8 space-x-4">
+            <button 
+                onclick="location.href='/export_csv'" 
+                class="px-6 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition">
+                Télécharger les résultats en CSV
+            </button>
+            {% if pdf_export_enabled %}
+            <button 
+                onclick="location.href='/export_pdf'" 
+                class="px-6 py-2 bg-red-600 text-white rounded shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+                Télécharger les résultats en PDF
+            </button>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<footer class="text-center mt-8 text-gray-400">
+    <p>&copy; 2024 Seed Tester. Tous droits réservés. Développé avec <span class="text-red-500">&hearts;</span> par Levelup.</p>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('analyze-form');
+
+        form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const button = form.querySelector('button[type="submit"]');
+            button.disabled = true;
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                });
+
+                if (response.ok) {
+                    window.showAlert("L'analyse a été soumise avec succès !", "success");
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    window.showAlert("Une erreur s'est produite lors de l'analyse.", "error");
+                }
+            } catch (error) {
+                window.showAlert("Impossible de soumettre l'analyse. Veuillez réessayer.", "error");
+            } finally {
+                button.disabled = false;
+            }
+        });
+    });
+</script>
+{% endblock %}

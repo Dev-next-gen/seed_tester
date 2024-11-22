@@ -1,0 +1,7 @@
+Test,Passé,Score,Détails
+Test de fréquence des bits,Oui,0.50,Fréquence des '1' : 50.11%
+Test de longueur de séquence,Oui,16.00,Longueur maximale de séquence de '1' : 16
+Test de périodicité des bits,Oui,0.50,Taux de répétition : 50.18%
+Test d'entropie de Shannon,Oui,1.00,Entropie calculée : 1.00
+Test de corrélation des bits,Oui,0.50,Taux de corrélation : 49.82%
+Test de Poker,Oui,19.46,Statistique de Poker calculée : 19.46

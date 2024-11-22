@@ -1,0 +1,225 @@
+/* ==========================
+   BASE ET GÉNÉRAUX
+   ========================== */
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', Arial, sans-serif;
+    background-color: #1a202c; /* Couleur de fond sombre */
+    color: #e2e8f0; /* Texte clair */
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Transition douce */
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ==========================
+   TITRES ET TEXTE
+   ========================== */
+
+h1, h2, h3, h4, h5 {
+    color: #63b3ed; /* Bleu clair */
+    margin-bottom: 15px;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+h2 {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+p, label {
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+/* ==========================
+   LIENS
+   ========================== */
+
+a {
+    color: #63b3ed;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+    color: #2b6cb0;
+    text-decoration: underline;
+}
+
+/* ==========================
+   BOUTONS
+   ========================== */
+
+button, .btn {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #3182ce;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover, .btn:hover {
+    background-color: #2b6cb0;
+    transform: translateY(-2px);
+}
+
+button:focus {
+    outline: 2px solid #63b3ed;
+    outline-offset: 2px;
+}
+
+button:disabled {
+    background-color: #4a5568;
+    cursor: not-allowed;
+}
+
+/* ==========================
+   FORMULAIRES
+   ========================== */
+
+form {
+    background-color: #2d3748;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+form label {
+    font-weight: bold;
+    color: #cbd5e0;
+}
+
+form input, form select, form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #4a5568;
+    border-radius: 5px;
+    background-color: #1a202c;
+    color: #e2e8f0;
+}
+
+form input:focus, form select:focus, form textarea:focus {
+    border-color: #63b3ed;
+    box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.3);
+    outline: none;
+}
+
+/* ==========================
+   TABLES
+   ========================== */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table th, table td {
+    padding: 10px;
+    border: 1px solid #4a5568;
+    text-align: left;
+}
+
+table th {
+    background-color: #2c5282;
+    color: #fff;
+    font-weight: bold;
+}
+
+table tr:nth-child(even) {
+    background-color: #2d3748;
+}
+
+/* ==========================
+   ALERTES
+   ========================== */
+
+.alert {
+    display: none;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.alert-success {
+    background-color: #48bb78;
+    color: #fff;
+}
+
+.alert-error {
+    background-color: #e53e3e;
+    color: #fff;
+}
+
+/* ==========================
+   LOADER / SPINNER
+   ========================== */
+
+#loader {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+#loader .spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid #e2e8f0;
+    border-top: 6px solid #3182ce;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==========================
+   RESPONSIVE DESIGN
+   ========================== */
+
+@media (max-width: 768px) {
+    body {
+        font-size: 0.9rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    form input, form select, form textarea {
+        font-size: 0.9rem;
+    }
+}

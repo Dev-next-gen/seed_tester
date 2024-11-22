@@ -1,0 +1,6 @@
+{% if message %}
+    <div class="fixed top-4 right-4 p-4 max-w-xs rounded-lg shadow-lg
+                {% if alert_type == 'success' %}bg-green-500 text-white{% elif alert_type == 'error' %}bg-red-500 text-white{% elif alert_type == 'info' %}bg-blue-500 text-white{% endif %}">
+        <p>{{ message }}</p>
+    </div>
+{% endif %}

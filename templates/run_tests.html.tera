@@ -1,0 +1,158 @@
+{% extends "layout_base" %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold text-blue-500 mb-6">Configuration et Analyse des Tests RNG</h1>
+
+    <!-- Formulaire de configuration -->
+    <form id="run-tests-form" class="space-y-6 bg-gray-900 p-6 rounded-lg shadow-md">
+        <div class="form-group">
+            <label for="num_seeds" class="block text-gray-300 font-semibold">Nombre de seeds :</label>
+            <input 
+                type="number" 
+                id="num_seeds" 
+                name="num_seeds" 
+                value="{{ default_seeds }}" 
+                min="1" 
+                required 
+                class="w-full px-4 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white"
+            >
+            <p class="text-sm text-gray-400 mt-1">Indiquez le nombre de seeds à générer pour les tests RNG.</p>
+        </div>
+
+        <div class="form-group">
+            <label for="test_mode" class="block text-gray-300 font-semibold">Mode de test :</label>
+            <select 
+                id="test_mode" 
+                name="test_mode" 
+                class="w-full px-4 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white"
+                required
+            >
+                <option value="standard" {% if default_mode == "standard" %}selected{% endif %}>Standard</option>
+                <option value="advanced" {% if default_mode == "advanced" %}selected{% endif %}>Avancé</option>
+                <option value="expert" {% if default_mode == "expert" %}selected{% endif %}>Expert</option>
+            </select>
+            <p class="text-sm text-gray-400 mt-1">Sélectionnez un mode pour ajuster la précision des tests.</p>
+        </div>
+
+        <button 
+            type="submit" 
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded shadow-md font-semibold transition">
+            Lancer les tests
+        </button>
+    </form>
+
+    <!-- Formulaire de chargement de fichier -->
+    <form id="upload-file-form" class="mt-6 bg-gray-900 p-6 rounded-lg shadow-md space-y-4">
+        <div class="form-group">
+            <label for="file_input" class="block text-gray-300 font-semibold">Charger un fichier RNG :</label>
+            <input 
+                type="file" 
+                id="file_input" 
+                name="file" 
+                accept=".csv,.json" 
+                required 
+                class="w-full px-4 py-2 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white"
+            >
+            <p class="text-sm text-gray-400 mt-1">Formats supportés : CSV, JSON.</p>
+        </div>
+        <button 
+            type="submit" 
+            class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded shadow-md font-semibold transition">
+            Analyser le fichier
+        </button>
+    </form>
+
+    <!-- Zone pour afficher les résultats -->
+    <div id="results-container" class="mt-6 bg-gray-800 p-6 rounded-lg shadow-md">
+        <p class="text-gray-400">Les résultats des tests s’afficheront ici après soumission.</p>
+    </div>
+
+    <!-- Boutons pour télécharger les résultats -->
+    <div class="text-center mt-6 space-x-4">
+        <button 
+            id="download-csv-btn" 
+            class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition hidden">
+            Télécharger les résultats en CSV
+        </button>
+        {% if pdf_export_enabled %}
+        <button 
+            id="download-pdf-btn" 
+            class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition hidden">
+            Télécharger les résultats en PDF
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- Loader pour indiquer le traitement -->
+    <div id="loader" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="spinner w-16 h-16 border-4 border-t-blue-500 border-gray-400 rounded-full animate-spin"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const runTestsForm = document.getElementById('run-tests-form');
+        const uploadFileForm = document.getElementById('upload-file-form');
+        const csvButton = document.getElementById('download-csv-btn');
+        const pdfButton = document.getElementById('download-pdf-btn');
+        const container = document.getElementById('results-container');
+        const loader = document.getElementById('loader');
+
+        // Fonction pour afficher/masquer le loader
+        function toggleLoader(show) {
+            loader.style.display = show ? 'flex' : 'none';
+        }
+
+        // Fonction pour afficher les résultats
+        function displayResults(results) {
+            if (!results || results.length === 0) {
+                container.innerHTML = `<p class="text-gray-400">Aucun résultat disponible.</p>`;
+                csvButton.classList.add("hidden");
+                pdfButton && pdfButton.classList.add("hidden");
+                return;
+            }
+
+            let tableHTML = `
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="p-2 text-blue-400">Test</th>
+                            <th class="p-2 text-blue-400">Résultat</th>
+                            <th class="p-2 text-blue-400">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            results.forEach(result => {
+                tableHTML += `
+                    <tr class="border-b border-gray-700">
+                        <td class="p-2">${result.test_name || 'Inconnu'}</td>
+                        <td class="p-2 ${result.passed ? 'text-green-500' : 'text-red-500'}">
+                            ${result.passed ? 'Réussi' : 'Échoué'}
+                        </td>
+                        <td class="p-2">${parseFloat(result.score || 0).toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
+            csvButton.classList.remove("hidden");
+            pdfButton && pdfButton.classList.remove("hidden");
+        }
+
+        // Gestion des téléchargements
+        csvButton.addEventListener('click', () => {
+            location.href = '/export_csv';
+        });
+
+        if (pdfButton) {
+            pdfButton.addEventListener('click', () => {
+                location.href = '/export_pdf';
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "layout_base" %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <!-- En-tête -->
+    <header class="result-header text-center">
+        <h2 class="text-2xl font-bold text-blue-400 mb-4">Résultats de l'analyse RNG</h2>
+        <p class="text-gray-300">Consultez les résultats détaillés des tests effectués et leurs scores.</p>
+    </header>
+
+    <!-- Section des résultats -->
+    <div class="table-section bg-gray-800 p-6 rounded-lg shadow-lg mt-6">
+        <h3 class="text-xl font-semibold text-white mb-4 text-center">Résultats des tests</h3>
+        {% if results %}
+            <table class="results-table w-full border-collapse text-left text-gray-200">
+                <thead>
+                    <tr class="bg-gray-700">
+                        <th class="border-b-2 border-gray-600 px-4 py-2">Nom du test</th>
+                        <th class="border-b-2 border-gray-600 px-4 py-2">Résultat</th>
+                        <th class="border-b-2 border-gray-600 px-4 py-2">Score</th>
+                        <th class="border-b-2 border-gray-600 px-4 py-2">Détails</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr class="{% if result.passed == 'true' %}bg-green-900 hover:bg-green-700{% else %}bg-red-900 hover:bg-red-700{% endif %}">
+                        <td class="border-b border-gray-700 px-4 py-2">{{ result.test_name }}</td>
+                        <td class="border-b border-gray-700 px-4 py-2">
+                            {% if result.passed == 'true' %}
+                                <span class="font-bold text-green-400">Réussi</span>
+                            {% else %}
+                                <span class="font-bold text-red-400">Échoué</span>
+                            {% endif %}
+                        </td>
+                        <td class="border-b border-gray-700 px-4 py-2">{{ result.score | float(format="%.2f") }}</td>
+                        <td class="border-b border-gray-700 px-4 py-2">{{ result.details }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-gray-400 text-center mt-4">Aucun résultat disponible pour le moment. Veuillez effectuer un test.</p>
+        {% endif %}
+    </div>
+
+    <!-- Actions -->
+    <div class="actions mt-6 flex justify-center gap-4">
+        <button onclick="location.href='/'" class="button bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-lg">
+            Retour à l'accueil
+        </button>
+        <button id="download-btn" class="button bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg shadow-lg">
+            Télécharger les résultats (CSV)
+        </button>
+    </div>
+</div>
+
+<script>
+    document.getElementById('download-btn').addEventListener('click', async function () {
+        try {
+            const response = await fetch('/export_csv');
+            if (!response.ok) throw new Error(`Erreur HTTP : ${response.status}`);
+            const data = await response.text();
+
+            const blob = new Blob([data], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'resultats.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error("Erreur lors du téléchargement :", error);
+            alert("Erreur lors du téléchargement des résultats.");
+        }
+    });
+</script>
+{% endblock content %}

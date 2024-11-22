@@ -1,0 +1,11 @@
+{% extends "layout_base" %}
+
+{% block content %}
+    <div class="container">
+        <h1>Exportation Réussie</h1>
+        <p>Le fichier CSV a été généré avec succès. Vous pouvez le télécharger en cliquant ci-dessous :</p>
+        <a href="/static/results.csv" class="button">Télécharger le CSV</a>
+        <br><br>
+        <a href="/" class="button">Retour à l'accueil</a>
+    </div>
+{% endblock content %}

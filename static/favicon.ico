@@ -1,0 +1,4 @@
+#[get("/favicon.ico")]
+fn favicon() -> rocket::fs::NamedFile {
+    rocket::fs::NamedFile::open("./static/favicon.ico").await.unwrap()
+}
