@@ -5,10 +5,12 @@ use rocket_dyn_templates::{Template, tera::Tera};
 use rocket::serde::{Deserialize, Serialize};
 use rocket::serde::json::Json;
 use rocket::data::{Data, ToByteUnit};
-use rocket::http::ContentType;
+use rocket::http::{ContentType, Status};
 use serde_json::json;
 use chrono::{Local, Datelike};
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufWriter, Cursor};
 use rand::Rng;
 
 // Importation des modules personnalisés
@@ -163,10 +165,10 @@ async fn upload_file(content_type: &ContentType, file: Data<'_>) -> Json<Vec<Tes
     }
 }
 
-// Route pour exporter les résultats en PDF (conditionnelle)
+// Route pour exporter les résultats en PDF
 #[cfg(feature = "pdf_export")]
 #[get("/export_pdf")]
-fn export_pdf() -> (ContentType, Vec<u8>) {
+fn export_pdf() -> Result<(ContentType, Vec<u8>), (Status, String)> {
     let test_results = vec![
         TestResult {
             test_name: "Test de Fréquence".to_string(),
@@ -184,8 +186,13 @@ fn export_pdf() -> (ContentType, Vec<u8>) {
         },
     ];
 
-    let pdf_data = generate_pdf_report(&test_results).expect("Erreur lors de la génération du PDF.");
-    (ContentType::PDF, pdf_data)
+    match generate_pdf_report(&test_results) {
+        Ok(pdf_data) => Ok((ContentType::PDF, pdf_data)),
+        Err(err) => {
+            eprintln!("Erreur lors de la génération du PDF : {:?}", err);
+            Err((Status::InternalServerError, "Impossible de générer le fichier PDF.".to_string()))
+        }
+    }
 }
 
 // Route pour exporter les résultats en CSV
@@ -270,7 +277,6 @@ fn rocket() -> _ {
         )
         .mount("/static", rocket::fs::FileServer::from("./static"));
 
-    // Ajouter conditionnellement la route export_pdf
     #[cfg(feature = "pdf_export")]
     {
         app = app.mount("/", routes![export_pdf]);

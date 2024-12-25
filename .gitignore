@@ -1,1 +1,6 @@
-/target
+node_modules/
+target/
+*.lock
+*.tmp
+.idea/
+.vscode/
