@@ -83,9 +83,10 @@ Divides seeds into groups of four bits and analyzes the distribution of possible
 
     Thresholds: Poker test values should fall between 10 and 20.
 
-Example Output
+### Example Output
 
-After running the program, a results.json file is generated with the following structure:
+After running the program, a `results.json` file is generated with the following structure:
+```json
 {
   "bit_frequency_test": {
     "score": 0.51,
@@ -100,6 +101,7 @@ After running the program, a results.json file is generated with the following s
     "status": "passed"
   }
 }
+
 
 Contribute
 
