@@ -1,12 +1,6 @@
-
----
-
-### **2. Fichier `LICENSE`**
-Utilisons la licence MIT. Voici le contenu du fichier `LICENSE` :
-
 MIT License
 
-Copyright (c) 2024 CAMUS Leo
+Copyright (c) 2024 Dev-next-gen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
