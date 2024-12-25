@@ -1,5 +1,11 @@
 # Seed Tester
 
+![Build Status](https://img.shields.io/github/actions/workflow/status/Dev-next-gen/seed_tester/test.yml?branch=main)
+![License](https://img.shields.io/github/license/Dev-next-gen/seed_tester)
+![Contributors](https://img.shields.io/github/contributors/Dev-next-gen/seed_tester)
+![Last Commit](https://img.shields.io/github/last-commit/Dev-next-gen/seed_tester)
+![Open Issues](https://img.shields.io/github/issues/Dev-next-gen/seed_tester)
+
 Seed Tester is a powerful analysis tool designed for developers, researchers, and cryptographers who need to evaluate the quality of random number generators (RNG). By running rigorous statistical tests, it ensures high entropy and randomness, which are critical for cryptography, simulations, and gaming applications.
 
 ## Features
